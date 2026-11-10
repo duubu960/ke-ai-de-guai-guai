@@ -1,0 +1,29 @@
+# 可爱的乖乖 — Render 部署蓝图（Blueprint）
+# 用法（手机也能操作）：在 GitHub 建一个空仓库，只上传两个文件——
+# 本文件 render.yaml 和 app.tar.gz（项目源码打包，见《部署教程-安卓手机版.md》）。
+# 然后在 Render 里点 New → Blueprint，选这个仓库，Render 会按下面的配置建一个免费 Web Service。
+# 构建时先把 app.tar.gz 解开（里面就是 backend/、frontend/ 这些文件），再 npm install。
+# 注意：这个文件里没有任何密钥。DATABASE_URL 和 DEEPSEEK_API_KEY
+# 在 Render 里第一次部署时会让你手动填（sync: false），
+# 填完后存在 Render 的环境变量里，不会进代码仓库。
+services:
+  - type: web
+    name: ke-ai-de-guai-guai
+    env: node
+    plan: free
+    buildCommand: tar -xzf app.tar.gz && npm install
+    startCommand: node backend/server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '22'
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat
+      # Neon PostgreSQL 连接串（在 Neon 控制台复制 pooled 连接串，贴到 Render 里）
+      - key: DATABASE_URL
+        sync: false
+      # DeepSeek API Key（在 DeepSeek 平台创建，贴到 Render 里）
+      - key: DEEPSEEK_API_KEY
+        sync: false
